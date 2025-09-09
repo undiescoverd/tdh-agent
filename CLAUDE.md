@@ -1,4 +1,4 @@
-# CLAUDE.md
+# TDH Agency Application Assistant - Claude Code Documentation
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
@@ -36,7 +36,7 @@ pip install -r requirements.txt
 ollama pull llama3.1:8b-instruct-q4_0
 ```
 
-## Architecture Overview
+## Application Architecture
 
 ### Core Components
 
@@ -45,8 +45,8 @@ ollama pull llama3.1:8b-instruct-q4_0
 - `applicant_info`: Collected application data
 - `role_type`: Performer classification ("Dancer", "Dancer Who Sings", "Singer/Actor")
 - `current_stage`: Current workflow node
-- `requirements_collected`: Tracking of collected materials
-- `materials_collected`: File/link storage
+- `requirements_collected`: Dictionary tracking material collection status
+- `materials_collected`: Dictionary storing actual material content/links
 - State flags for conditional routing (has_spotlight, has_representation, work_preferences)
 
 **Manual Node Execution System**: Replaced LangGraph's automatic execution with controlled routing:
@@ -57,18 +57,26 @@ ollama pull llama3.1:8b-instruct-q4_0
 
 **LLM Integration**: Uses Ollama with llama3.1:8b-instruct-q4_0 model via LangChain
 
-### Key Functions
+### Application Flow
 
-**Routing Functions**: Control flow between nodes based on applicant responses and state
+1. **Initial Setup**: `START` → `welcome` (Initialize conversation state)
+2. **Basic Information Collection**: `welcome` → `collect_basic_info` (Name, email, phone, work authorization)
+3. **Role Classification**: `collect_basic_info` → `classify_role` (Dancer, Dancer Who Sings, Singer/Actor)
+4. **Role-Specific Requirements**: Explain materials needed based on role type
+5. **Spotlight Profile Check**: Optional Spotlight profile collection
+6. **Current Representation Check**: Optional current representation details
+7. **Work Preferences**: Collect work type preferences (Theatre, Abroad, Cruises, TV/Film, Commercial)
+8. **Materials Collection**: Role-specific CV and reel collection with validation
+9. **Research Questions**: Additional applicant information
+10. **Final Summary**: Application completion and submission instructions
+
+### Key Routing Functions
+
 - `route_after_role_classification()`: Directs to role-specific requirements
+- `route_after_spotlight_check()`: Routes based on Spotlight profile status
+- `route_after_representation_check()`: Routes based on current representation
+- `route_after_work_preferences()`: Routes to appropriate materials collection
 - `route_after_materials_collection()`: Handles completion logic
-- `route_after_*()`: Various conditional routing points
-
-**Validation Functions**: 
-- `extract_applicant_info()`: Regex-based extraction of contact details
-- `validate_material()`: URL/file validation for submitted materials
-
-**Node Functions**: Each conversation stage (welcome, collect info, requirements, etc.)
 
 ### State Management
 
@@ -77,7 +85,30 @@ The application uses LangGraph's MemorySaver for conversation persistence. Each 
 **Global State**: `conversation_states` dict tracks active conversations
 **Conversation Flow**: Managed through `initialize_conversation()` and `continue_conversation()`
 
-### Test Framework
+### Material Validation
+
+- **CV**: Must be PDF or Word format
+- **Reels**: Must be YouTube or Vimeo links only
+- **Real-time Validation**: Using regex patterns and content analysis
+
+## Architecture Changes (v2.0)
+
+### Recursion Fix Implementation
+- **Problem**: Original `graph.invoke()` caused infinite loops through connected nodes
+- **Solution**: Manual node execution with iterative processing
+- **Key Changes**:
+  - `initialize_conversation()`: Direct welcome node execution instead of full graph
+  - `continue_conversation()`: Loop-based processing until stage stabilizes
+  - `classify_role()`: Fixed to process most recent HumanMessage, not last message
+  - Enhanced error handling and state validation
+
+### Message Processing Improvements
+- Fixed role classification by finding most recent human message
+- Improved stage transition logic to prevent stuck states
+- Added safeguards against circular routing
+- Enhanced conversation flow reliability
+
+## Testing Framework
 
 Three test scenarios in `test_tdh_agent.py`:
 1. **Dancer Application**: Full flow for dancer role
@@ -99,25 +130,31 @@ Three test scenarios in `test_tdh_agent.py`:
 - Role-specific workflows are hardcoded in the state graph structure
 - The agent maintains conversation context through manual state management
 
-## Recent Architecture Changes (v2.0)
+## Known Issues & Solutions
 
-### Recursion Fix Implementation
-- **Problem**: Original `graph.invoke()` caused infinite loops through connected nodes
-- **Solution**: Manual node execution with iterative processing
-- **Key Changes**:
-  - `initialize_conversation()`: Direct welcome node execution instead of full graph
-  - `continue_conversation()`: Loop-based processing until stage stabilizes
-  - `classify_role()`: Fixed to process most recent HumanMessage, not last message
-  - Enhanced error handling and state validation
+### GraphRecursionError (Resolved)
+**Previous Issue**: `GraphRecursionError: Recursion limit of 50 reached without hitting a stop condition`
 
-### Message Processing Improvements
-- Fixed role classification by finding most recent human message
-- Improved stage transition logic to prevent stuck states
-- Added safeguards against circular routing
-- Enhanced conversation flow reliability
+**Root Cause**: Conditional edges created infinite loops in materials collection
 
-### Testing and Validation
+**Solution Implemented**: 
+- Manual node execution system
+- Direct edges for linear flow sections
+- Conditional edges only for true branching decisions
+- State-based routing that checks state, not conversation history
+
+### Quick Fixes for Future Development
+
+To prevent recursion issues:
+1. Use direct edges for linear progressions
+2. Handle completion logic within node functions
+3. Avoid circular conditional routing
+4. Test conversation flows end-to-end
+
+## Testing and Validation
+
 - All recursion errors resolved
 - Complete conversation flows tested (basic info → role → requirements → materials)
 - Role classification working for all three performer types
 - Requirements tracking properly initialized based on detected roles
+- Materials collection with validation working correctly
