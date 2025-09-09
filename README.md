@@ -11,6 +11,7 @@ An intelligent conversational agent built with LangGraph and Ollama that guides 
   - Singer/Actor
 - **Material Validation**: Validates CVs, reels, and other required materials
 - **Conversation Memory**: Maintains conversation state throughout the application process
+- **Robust Error Handling**: Fixed recursion issues and improved state management
 - **Test Scenarios**: Includes comprehensive test cases for different application types
 
 ## Requirements
@@ -90,6 +91,16 @@ tdh-agent/
 - **LLM**: Ollama with llama3.1:8b-instruct-q4_0 model
 - **State Management**: Custom state tracking with conversation memory
 - **Validation**: Regex-based validation for materials and contact information
+- **Architecture**: Manual node execution with iterative stage processing to prevent recursion errors
+
+## Recent Fixes
+
+### v2.0 - Recursion Error Resolution
+- **Fixed LangGraph Recursion Issues**: Replaced `graph.invoke()` with targeted node execution
+- **Improved State Management**: Implemented iterative processing that continues until stage stabilizes
+- **Enhanced Message Processing**: Fixed role classification to properly detect human messages
+- **Better Error Handling**: Added safeguards against infinite loops and improved conversation flow
+- **Robust Routing**: Fixed circular routing issues and ensured all paths lead to completion
 
 ## Contributing
 
