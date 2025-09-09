@@ -1,6 +1,6 @@
 # TDH Agency Application Assistant
 
-An intelligent conversational agent built with LangGraph and Ollama that guides talent through the TDH Agency application process.
+An intelligent conversational agent built with LangGraph and Google Gemini that guides talent through the TDH Agency application process.
 
 ## Features
 
@@ -17,7 +17,7 @@ An intelligent conversational agent built with LangGraph and Ollama that guides 
 ## Requirements
 
 - Python 3.8+
-- Ollama with llama3.1:8b-instruct-q4_0 model
+- Google Gemini API key (free at https://aistudio.google.com/app/apikey)
 - Required Python packages (see requirements.txt)
 
 ## Installation
@@ -39,9 +39,16 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-4. Ensure Ollama is running with the required model:
+4. Set up your Gemini API key:
 ```bash
-ollama pull llama3.1:8b-instruct-q4_0
+# Create .env file with your API key
+echo "GOOGLE_API_KEY=your-api-key-here" > .env
+# Replace 'your-api-key-here' with your actual Gemini API key from https://aistudio.google.com/app/apikey
+```
+
+5. Test the connection:
+```bash
+python test_gemini.py
 ```
 
 ## Usage
@@ -69,7 +76,7 @@ Choose from three test scenarios:
 tdh-agent/
 ├── tdh_agent.py          # Main application with LangGraph workflow
 ├── test_tdh_agent.py     # Test scenarios and validation
-├── test_llama.py         # Ollama connection testing
+├── test_gemini.py        # Gemini API connection testing
 ├── requirements.txt      # Python dependencies
 ├── README.md            # This file
 └── .gitignore           # Git ignore rules
@@ -88,7 +95,7 @@ tdh-agent/
 ## Technical Details
 
 - **Framework**: LangGraph for conversation flow management
-- **LLM**: Ollama with llama3.1:8b-instruct-q4_0 model
+- **LLM**: Google Gemini 2.5 Flash model via Google AI Studio
 - **State Management**: Custom state tracking with conversation memory
 - **Validation**: Regex-based validation for materials and contact information
 - **Architecture**: Manual node execution with iterative stage processing to prevent recursion errors

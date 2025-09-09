@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Python-based conversational AI agent built with LangGraph and Ollama that guides talent through the TDH Agency application process. The system uses a state-driven workflow to manage multi-step conversations for three performer types: Dancer, Dancer Who Sings, and Singer/Actor.
+This is a Python-based conversational AI agent built with LangGraph and Google Gemini that guides talent through the TDH Agency application process. The system uses a state-driven workflow to manage multi-step conversations for three performer types: Dancer, Dancer Who Sings, and Singer/Actor.
 
 ## Development Commands
 
@@ -18,9 +18,9 @@ python tdh_agent.py
 python test_tdh_agent.py
 ```
 
-### Testing Ollama Connection
+### Testing Gemini Connection
 ```bash
-python test_llama.py
+python test_gemini.py
 ```
 
 ### Environment Setup
@@ -32,8 +32,9 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 # Install dependencies
 pip install -r requirements.txt
 
-# Ensure Ollama model is available
-ollama pull llama3.1:8b-instruct-q4_0
+# Set up Gemini API key
+echo "GOOGLE_API_KEY=your-api-key-here" > .env
+# Get your API key from: https://aistudio.google.com/app/apikey
 ```
 
 ## Application Architecture
@@ -55,7 +56,7 @@ ollama pull llama3.1:8b-instruct-q4_0
 - `continue_conversation()`: Iterative processing until stage stabilizes
 - Prevents recursion errors and provides precise control over conversation flow
 
-**LLM Integration**: Uses Ollama with llama3.1:8b-instruct-q4_0 model via LangChain
+**LLM Integration**: Uses Google Gemini 2.5 Flash model via LangChain Google GenAI
 
 ### Application Flow
 
@@ -118,13 +119,13 @@ Three test scenarios in `test_tdh_agent.py`:
 ## Key Dependencies
 
 - **LangGraph**: Workflow orchestration and state management
-- **LangChain**: LLM integration and prompt templates
-- **Ollama**: Local LLM hosting (requires llama3.1:8b-instruct-q4_0 model)
+- **LangChain**: LLM integration and prompt templates  
+- **Google Gemini**: Cloud-based LLM via Google AI Studio API
 - **Python 3.8+**: Core runtime requirement
 
 ## Development Notes
 
-- The application requires Ollama to be running locally with the specific model
+- The application requires a valid Google Gemini API key from Google AI Studio
 - All conversation state is held in memory (no persistent storage)
 - Material validation uses regex patterns for URLs and basic format checking
 - Role-specific workflows are hardcoded in the state graph structure

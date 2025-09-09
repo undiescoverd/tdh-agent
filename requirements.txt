@@ -18,6 +18,7 @@ jsonpointer==3.0.0
 langchain==0.3.27
 langchain-community==0.3.29
 langchain-core==0.3.75
+langchain-google-genai==2.0.7
 langchain-ollama==0.3.7
 langchain-text-splitters==0.3.11
 langgraph==0.6.7

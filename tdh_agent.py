@@ -1,10 +1,15 @@
 from typing import Dict, List, TypedDict, Literal, Optional, Union, Any, Tuple
 import re
+import os
+from dotenv import load_dotenv
 from langchain_core.messages import HumanMessage, AIMessage
-from langchain_ollama import OllamaLLM
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langgraph.graph import StateGraph, START, END
 from langgraph.checkpoint.memory import MemorySaver
+
+# Load environment variables
+load_dotenv()
 
 # Define the state structure for our agent
 class AgentState(TypedDict):
@@ -29,7 +34,11 @@ class AgentState(TypedDict):
     materials_collected: Dict[str, str]
 
 # Initialize the LLM
-llm = OllamaLLM(model="llama3.1:8b-instruct-q4_0")
+llm = ChatGoogleGenerativeAI(
+    model="gemini-2.5-flash",
+    temperature=0.7,
+    google_api_key=os.getenv("GOOGLE_API_KEY")
+)
 
 # Helper functions
 def extract_applicant_info(message: str, current_info: Dict[str, Any]) -> Dict[str, Any]:
