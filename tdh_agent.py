@@ -7,9 +7,59 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langgraph.graph import StateGraph, START, END
 from langgraph.checkpoint.memory import MemorySaver
+from config import settings
+from models import ApplicantInfo, MaterialsCollected, RequirementsCollected, WorkPreferences
+from persistence import ConversationPersistence
+from validators import MaterialValidator, InputValidator, ContentValidator
 
-# Load environment variables
+# Load environment variables (keeping for backward compatibility)
 load_dotenv()
+
+# Conversion functions for backward compatibility
+def dict_to_applicant_info(data: dict) -> ApplicantInfo:
+    """Convert existing dict to ApplicantInfo model."""
+    try:
+        return ApplicantInfo(**data)
+    except Exception:
+        # Fallback to empty model if validation fails
+        return ApplicantInfo()
+
+def applicant_info_to_dict(info: ApplicantInfo) -> dict:
+    """Convert ApplicantInfo model to dict for compatibility."""
+    return info.model_dump()
+
+def dict_to_materials_collected(data: dict) -> MaterialsCollected:
+    """Convert existing dict to MaterialsCollected model."""
+    try:
+        return MaterialsCollected(**data)
+    except Exception:
+        return MaterialsCollected()
+
+def materials_collected_to_dict(materials: MaterialsCollected) -> dict:
+    """Convert MaterialsCollected model to dict for compatibility."""
+    return materials.model_dump()
+
+def dict_to_requirements_collected(data: dict) -> RequirementsCollected:
+    """Convert existing dict to RequirementsCollected model."""
+    try:
+        return RequirementsCollected(**data)
+    except Exception:
+        return RequirementsCollected()
+
+def requirements_collected_to_dict(requirements: RequirementsCollected) -> dict:
+    """Convert RequirementsCollected model to dict for compatibility."""
+    return requirements.model_dump()
+
+def dict_to_work_preferences(data: dict) -> WorkPreferences:
+    """Convert existing dict to WorkPreferences model."""
+    try:
+        return WorkPreferences(**data)
+    except Exception:
+        return WorkPreferences()
+
+def work_preferences_to_dict(preferences: WorkPreferences) -> dict:
+    """Convert WorkPreferences model to dict for compatibility."""
+    return preferences.model_dump()
 
 # Define the state structure for our agent
 class AgentState(TypedDict):
@@ -37,7 +87,7 @@ class AgentState(TypedDict):
 llm = ChatGoogleGenerativeAI(
     model="gemini-2.5-flash",
     temperature=0.7,
-    google_api_key=os.getenv("GOOGLE_API_KEY")
+    google_api_key=settings.google_api_key
 )
 
 # Helper functions
@@ -91,19 +141,18 @@ def extract_applicant_info(message: str, current_info: Dict[str, Any]) -> Dict[s
 
 def validate_material(material_type: str, content: str) -> Tuple[bool, str]:
     """Validate a material based on its type and return validation result and feedback."""
+    validator = MaterialValidator()
+    
     if material_type == "cv":
-        # Check if the content mentions PDF or Word
-        if any(ext in content.lower() for ext in ["pdf", "word", ".doc", ".docx"]):
-            return True, "Great! Your CV in PDF/Word format is noted."
+        is_valid, message = validator.validate_cv(content)
+        if is_valid:
+            return True, f"Great! Your CV in PDF/Word format is noted."
         else:
             return False, "Please note that your CV must be in PDF or Word format only. Do you have your CV in one of these formats?"
     
     elif any(reel in material_type for reel in ["dance_reel", "vocal_reel", "acting_reel", "movement_reel"]):
-        # Check if the content contains a YouTube or Vimeo link
-        youtube_pattern = r"(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?([a-zA-Z0-9_-]{11})"
-        vimeo_pattern = r"(?:https?:\/\/)?(?:www\.)?vimeo\.com\/([0-9]+)"
-        
-        if re.search(youtube_pattern, content) or re.search(vimeo_pattern, content):
+        is_valid, message = validator.validate_video_link(content, material_type)
+        if is_valid:
             reel_name = material_type.replace("_", " ").title()
             return True, f"Perfect! I've noted your {reel_name}."
         else:
@@ -931,6 +980,9 @@ graph = builder.compile()
 # Global state storage for simplicity
 conversation_states = {}
 
+# Initialize persistence layer (optional enhancement)
+persistence = ConversationPersistence()
+
 # Function to initialize the conversation
 def initialize_conversation():
     """Initialize a new conversation with the agent."""
@@ -1070,6 +1122,13 @@ def continue_conversation(user_input: str, thread_id: str):
     
     # Update the stored state
     conversation_states[thread_id] = current_state
+    
+    # Save state to disk (optional persistence)
+    try:
+        persistence.save_state(thread_id, current_state)
+    except Exception as e:
+        # Persistence failure shouldn't break the conversation
+        print(f"Warning: Could not save conversation state: {e}")
     
     return current_state
  

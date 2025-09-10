@@ -1,0 +1,138 @@
+# TDH Agency Assistant Rules for Claude Code
+
+project_type: python_langgraph_agent
+python_version: "3.8+"
+
+code_style:
+  - Use type hints for all function parameters and returns
+  - Add docstrings to all functions and classes
+  - Keep functions under 50 lines
+  - Use descriptive variable names
+  - Follow PEP 8 style guidelines
+  - Use Black formatter for consistent code style
+
+imports:
+  - Group imports: standard library, third-party, local
+  - Use absolute imports for project modules
+  - Import order: standard library → third-party → local modules
+
+testing:
+  - Write tests for new validators using pytest
+  - Test edge cases for user input validation
+  - Mock LLM calls in tests to avoid API costs
+  - Use fixtures for common test data setup
+  - Test both happy path and error scenarios
+
+refactoring_priority:
+  1. Don't break existing functionality
+  2. Add new features as separate modules first
+  3. Integrate gradually with fallbacks
+  4. Test each phase before proceeding
+  5. Maintain backward compatibility
+
+architecture:
+  - Core LangGraph workflow remains untouched
+  - New functionality added as optional enhancements
+  - Use adapter patterns for compatibility
+  - Modular design with clear separation of concerns
+  - Error handling that doesn't break conversation flow
+
+current_phase: "Phases 1-8 Implementation Complete"
+
+modules:
+  config.py: "Pydantic settings management"
+  models.py: "Type-safe data models with validation"
+  persistence.py: "Conversation state persistence"
+  validators.py: "Input and material validation"
+  async_handlers.py: "Future async support infrastructure"
+  error_handlers.py: "Enhanced error handling"
+  test_validators.py: "Comprehensive test suite"
+
+context:
+  - This is a conversation agent for talent agency applications
+  - Uses LangGraph for state management with manual node execution
+  - Three performer types: Dancer, Dancer Who Sings, Singer/Actor
+  - Must validate materials (CV, reels) before submission
+  - Gemini 2.5 Flash model via Google AI Studio API
+  - Zero-downtime upgrade approach implemented
+
+upgrade_methodology:
+  - Phase-by-phase implementation
+  - Non-breaking changes only
+  - Fallback mechanisms for all new features
+  - Comprehensive testing between phases
+  - Modular architecture with clear interfaces
+
+validation_rules:
+  - CV: PDF or Word formats only
+  - Video reels: YouTube or Vimeo links only
+  - Email: Standard email format validation
+  - Phone: International format support
+  - Names: Letters, spaces, hyphens, apostrophes only
+
+error_handling:
+  - Never break conversation flow
+  - Graceful degradation for optional features
+  - Detailed logging for debugging
+  - User-friendly error messages
+  - Fallback to basic functionality
+
+dependencies:
+  core:
+    - langgraph: Workflow orchestration
+    - langchain: LLM integration
+    - google-generativeai: Gemini API
+    - pydantic: Data validation
+  optional:
+    - pytest: Testing framework
+    - black: Code formatting
+    - mypy: Type checking
+
+file_structure:
+  /
+  ├── tdh_agent.py          # Main application (core unchanged)
+  ├── config.py             # Settings management
+  ├── models.py             # Data models
+  ├── persistence.py        # State persistence
+  ├── validators.py         # Validation logic
+  ├── async_handlers.py     # Async support
+  ├── error_handlers.py     # Error handling
+  ├── test_validators.py    # Test suite
+  ├── .cursorrules          # This file
+  ├── requirements.txt      # Dependencies
+  └── .env                  # Environment variables
+
+development_commands:
+  run: "python tdh_agent.py"
+  test: "python test_tdh_agent.py"
+  test_new: "pytest test_validators.py -v"
+  format: "black *.py"
+  type_check: "mypy tdh_agent.py"
+
+git_workflow:
+  - Commit after each successful phase
+  - Use descriptive commit messages
+  - Tag major milestones
+  - Keep feature branches small and focused
+
+security:
+  - Never commit API keys or secrets
+  - Use environment variables for configuration
+  - Validate all user inputs
+  - Sanitize data before persistence
+  - Follow principle of least privilege
+
+performance:
+  - Lazy loading of optional modules
+  - Efficient state serialization
+  - Minimal memory footprint
+  - Fast startup time
+  - Graceful handling of API rate limits
+
+future_enhancements:
+  - Full async conversation processing
+  - Advanced material validation (file analysis)
+  - Multi-language support
+  - Enhanced persistence backends
+  - Real-time collaboration features
+  - Analytics and reporting

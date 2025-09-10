@@ -4,6 +4,7 @@ An intelligent conversational agent built with LangGraph and Google Gemini that 
 
 ## Features
 
+### Core Functionality
 - **Interactive Application Process**: Guides applicants through collecting basic information, role classification, and material submission
 - **Role-Specific Requirements**: Handles three performer types:
   - Dancer
@@ -13,6 +14,16 @@ An intelligent conversational agent built with LangGraph and Google Gemini that 
 - **Conversation Memory**: Maintains conversation state throughout the application process
 - **Robust Error Handling**: Fixed recursion issues and improved state management
 - **Test Scenarios**: Includes comprehensive test cases for different application types
+
+### Modern Architecture (v3.0 - 2024)
+- **Type-Safe Configuration**: Pydantic-based settings with validation
+- **Enhanced Data Models**: Type-safe data structures with runtime validation
+- **Persistent Sessions**: Optional conversation state persistence to disk
+- **Advanced Validation**: Comprehensive input validation with detailed error messages  
+- **Async Infrastructure**: Future-ready async conversation processing
+- **Comprehensive Testing**: Extensive test suite with pytest integration
+- **Production-Ready Error Handling**: Graceful degradation that never breaks conversations
+- **Claude Code Integration**: Optimized for Claude Code development workflows
 
 ## Requirements
 
@@ -60,7 +71,8 @@ python tdh_agent.py
 ```
 
 ### Test Scenarios
-Run the test suite:
+
+#### Original Integration Tests
 ```bash
 python test_tdh_agent.py
 ```
@@ -70,16 +82,44 @@ Choose from three test scenarios:
 2. Singer/Actor Application  
 3. Invalid Materials Handling
 
+#### Enhanced Validation Tests (v3.0)
+```bash
+# Requires pytest: pip install pytest
+pytest test_validators.py -v
+```
+
+Comprehensive tests for:
+- Material validation (CV, video links, Spotlight profiles)
+- Input validation (emails, phone numbers, names)
+- Content analysis and completion detection
+- Edge cases and error scenarios
+
 ## Project Structure
 
+### Core Files
 ```
 tdh-agent/
 ├── tdh_agent.py          # Main application with LangGraph workflow
-├── test_tdh_agent.py     # Test scenarios and validation
+├── test_tdh_agent.py     # Integration test scenarios
 ├── test_gemini.py        # Gemini API connection testing
 ├── requirements.txt      # Python dependencies
 ├── README.md            # This file
+├── CLAUDE.md            # Detailed technical documentation
 └── .gitignore           # Git ignore rules
+```
+
+### Modern Architecture (v3.0)
+```
+tdh-agent/
+├── config.py             # Pydantic settings management
+├── models.py             # Type-safe data models
+├── persistence.py        # Conversation state persistence
+├── validators.py         # Advanced input validation
+├── async_handlers.py     # Async infrastructure
+├── error_handlers.py     # Comprehensive error handling
+├── test_validators.py    # Validation test suite
+├── .cursorrules          # Claude Code integration
+└── .conversation_cache/  # Persistent session storage (auto-created)
 ```
 
 ## Application Flow
@@ -100,7 +140,19 @@ tdh-agent/
 - **Validation**: Regex-based validation for materials and contact information
 - **Architecture**: Manual node execution with iterative stage processing to prevent recursion errors
 
-## Recent Fixes
+## Version History
+
+### v3.0 - Modern Architecture Upgrade (2024)
+**Zero Breaking Changes - Systematic Enhancement**
+
+- **🔧 Configuration Management**: Pydantic-based settings with environment validation
+- **🏷️ Type Safety**: Comprehensive data models with runtime validation
+- **💾 Session Persistence**: Optional conversation state saving to disk
+- **✅ Enhanced Validation**: Advanced input validation with better error messages
+- **⚡ Async Infrastructure**: Future-ready async conversation processing
+- **🧪 Comprehensive Testing**: pytest-based validation test suite  
+- **🛡️ Production-Ready Error Handling**: Graceful degradation and detailed logging
+- **🤖 Claude Code Integration**: Optimized development workflow integration
 
 ### v2.0 - Recursion Error Resolution
 - **Fixed LangGraph Recursion Issues**: Replaced `graph.invoke()` with targeted node execution
